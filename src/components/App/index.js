@@ -11,7 +11,7 @@ class App extends Component {
       <React.Fragment>
         <GithubCorner />
         <main>
-          <div style={{width:100%;height: 80px; backgroundColor: #000066; color: white;}}>Instance 2</div>
+          <div style={{width:'100%', height: '80px', backgroundColor: '#000066', color: 'white'}}>Instance 2</div>
           <Filter />
           <Shelf />
         </main>
