@@ -1,0 +1,83 @@
+name: Build and test eshop
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  Install:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.5.1
+        with:
+          node-version: 10
+      - name: Cache node modules
+        uses: actions/cache@v3.0.11
+        with:
+          path: node_modules
+          key: node_modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Install packages with NPM
+        run: |
+          npm ci
+
+  Build:
+    needs: Install
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.5.1
+        with:
+          node-version: 10
+
+      - name: Cache node modules
+        uses: actions/cache@v3.0.11
+        with:
+          path: node_modules
+          key: node_modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Build
+        run: |
+          npm rebuild node-sass --force
+          npm run build -- --colors
+      
+      - name: Cache node modules and Build folder
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: actions/cache@v3.0.11
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+            ./build
+          key: ${{ runner.os }}--build-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}--build-${{ github.run_id }}
+
+  Test:
+    needs: Install
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.5.1
+        with:
+          node-version: 10
+
+      - name: Cache node modules
+        uses: actions/cache@v3.0.11
+        with:
+          path: node_modules
+          key: node_modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Run tests
+        run: |
+          npm run test -- --colors
